@@ -1,12 +1,10 @@
+package com.pixel.frame;
+
 import java.util.Scanner;
 
-/**
- *
- * @author tunqu
- */
-public class Mavenproject1 {
-   
-         static final int MAX = 100;
+public class JavaApplication {
+
+    static final int MAX = 100;
     static String[] usuarios = new String[MAX];
     static String[] contrasenas = new String[MAX];
     static String[] roles = new String[MAX];
