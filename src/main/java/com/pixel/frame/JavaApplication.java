@@ -1,6 +1,7 @@
 package com.pixel.frame;
 
 import java.util.Scanner;
+import java.sql.*;
 
 public class JavaApplication {
 
@@ -19,7 +20,34 @@ public class JavaApplication {
     static String[][] favoritos = new String[MAX][MAX]; 
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+        String url = "jdbc:sqlserver://localhost:1433;databaseName=PixelFrame;trustServerCertificate=true;";
+        String user = "PixelUser";
+        String password = "Hola123!Segura";
+
+        String nombreUsuario = "pixeluserindatabase";
+        String correo = "pixeluser@example.com";
+        String contrasena = "segura123";
+
+        String sql = "INSERT INTO Usuarios (NombreUsuario, Correo, Contrasena) VALUES (?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, nombreUsuario);
+            stmt.setString(2, correo);
+            stmt.setString(3, contrasena);
+
+            int filasInsertadas = stmt.executeUpdate();
+            if (filasInsertadas > 0) {
+                System.out.println("Usuario insertado exitosamente.");
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al insertar el usuario:");
+            e.printStackTrace();
+        }
+
+        /*Scanner sc = new Scanner(System.in);
 
         usuarios[usuarioCount] = "admin";
         contrasenas[usuarioCount] = "admin";
@@ -65,7 +93,7 @@ public class JavaApplication {
             }
         }
 
-        sc.close();
+        sc.close();*/
     }
 
     static int validarUsuario(String user, String pass) {
