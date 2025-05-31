@@ -100,10 +100,16 @@ public class JavaApplication {
             try (Connection conn = connectDB()) {
                 switch (opcion) {
                     case 1:
-                        String consulta = "SELECT ContenidoID, Titulo FROM Contenidos";
-                        ResultSet rs = conn.createStatement().executeQuery(consulta);
+                        ResultSet rs = conn.prepareStatement(
+                                "SELECT c.Titulo, c.Descripcion, t.NombreTipo, g.NombreGenero FROM Contenidos c JOIN TiposContenido t ON c.TipoID = t.TipoID JOIN Generos g ON c.GeneroID = g.GeneroID"
+                        ).executeQuery();
+
                         while (rs.next()) {
-                            System.out.println(rs.getInt("ContenidoID") + ". " + rs.getString("Titulo"));
+                            System.out.println("Título: " + rs.getString("Titulo"));
+                            System.out.println("Tipo: " + rs.getString("NombreTipo"));
+                            System.out.println("Género: " + rs.getString("NombreGenero"));
+                            System.out.println("Descripción: " + rs.getString("Descripcion"));
+                            System.out.println("------");
                         }
                         break;
                     case 2:
