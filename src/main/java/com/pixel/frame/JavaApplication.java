@@ -93,6 +93,10 @@ public class JavaApplication {
             System.out.println("2. Agregar pelicula o videojuego");
             System.out.println("3. Ver clientes");
             System.out.println("4. Eliminar cliente");
+            System.out.println("5. Ver reseñas");
+            System.out.println("6. Ver historial de usuarios");
+            System.out.println("7. Agregar nuevo género");
+            System.out.println("8. Agregar nuevo tipo de contenido");
             System.out.println("0. Cerrar sesion");
             opcion = sc.nextInt();
             sc.nextLine();
@@ -152,6 +156,48 @@ public class JavaApplication {
                         int afectados = eliminar.executeUpdate();
                         System.out.println(afectados > 0 ? "Cliente eliminado." : "No se pudo eliminar.");
                         break;
+                    case 5:
+                        rs = conn.createStatement().executeQuery(
+                                "SELECT r.ResenaID, u.NombreUsuario, c.Titulo, r.Comentario, r.Calificacion " +
+                                        "FROM Resenas r JOIN Usuarios u ON r.UsuarioID = u.UsuarioID " +
+                                        "JOIN Contenidos c ON r.ContenidoID = c.ContenidoID"
+                        );
+                        while (rs.next()) {
+                            System.out.println("[" + rs.getInt("ResenaID") + "] " + rs.getString("NombreUsuario") +
+                                    " reseñó '" + rs.getString("Titulo") + "': " + rs.getString("Comentario") +
+                                    " (Calificación: " + rs.getInt("Calificacion") + ")");
+                        }
+                        break;
+
+                    case 6:
+                        rs = conn.createStatement().executeQuery(
+                                "SELECT h.UsuarioID, u.NombreUsuario, c.Titulo, h.FechaHora " +
+                                        "FROM HistorialPaginas h JOIN Usuarios u ON h.UsuarioID = u.UsuarioID " +
+                                        "JOIN Contenidos c ON h.ContenidoID = c.ContenidoID"
+                        );
+                        while (rs.next()) {
+                            System.out.println(rs.getString("NombreUsuario") + " vio '" +
+                                    rs.getString("Titulo") + "' en " + rs.getTimestamp("FechaHora"));
+                        }
+                        break;
+
+                    case 7:
+                        System.out.print("Nuevo género: ");
+                        String nuevoGenero = sc.nextLine();
+                        PreparedStatement psGen = conn.prepareStatement("INSERT INTO Generos (NombreGenero) VALUES (?)");
+                        psGen.setString(1, nuevoGenero);
+                        psGen.executeUpdate();
+                        System.out.println("Género agregado.");
+                        break;
+
+                    case 8:
+                        System.out.print("Nuevo tipo de contenido: ");
+                        String nuevoTipo = sc.nextLine();
+                        PreparedStatement psTipo = conn.prepareStatement("INSERT INTO TiposContenido (NombreTipo) VALUES (?)");
+                        psTipo.setString(1, nuevoTipo);
+                        psTipo.executeUpdate();
+                        System.out.println("Tipo de contenido agregado.");
+                        break;
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -166,6 +212,9 @@ public class JavaApplication {
             System.out.println("1. Ver contenidos disponibles");
             System.out.println("2. Agregar contenido a favoritos");
             System.out.println("3. Ver favoritos");
+            System.out.println("4. Escribir reseña");
+            System.out.println("5. Ver mis reseñas");
+            System.out.println("6. Ver mi historial de navegación");
             System.out.println("0. Cerrar sesion");
             opcion = sc.nextInt();
             sc.nextLine();
@@ -197,6 +246,46 @@ public class JavaApplication {
                         System.out.println("Tus favoritos:");
                         while (rs.next()) {
                             System.out.println("- " + rs.getString("Titulo"));
+                        }
+                        break;
+                    case 4:
+                        System.out.print("ID del contenido a reseñar: ");
+                        int idContResena = sc.nextInt(); sc.nextLine();
+                        System.out.print("Comentario: ");
+                        String comentario = sc.nextLine();
+                        System.out.print("Calificación (1-5): ");
+                        int calificacion = sc.nextInt(); sc.nextLine();
+                        PreparedStatement resStmt = conn.prepareStatement(
+                                "INSERT INTO Resenas (UsuarioID, ContenidoID, Comentario, Calificacion) VALUES (?, ?, ?, ?)"
+                        );
+                        resStmt.setInt(1, userId);
+                        resStmt.setInt(2, idContResena);
+                        resStmt.setString(3, comentario);
+                        resStmt.setInt(4, calificacion);
+                        resStmt.executeUpdate();
+                        System.out.println("Reseña guardada.");
+                        break;
+
+                    case 5:
+                        PreparedStatement verMisResenas = conn.prepareStatement(
+                                "SELECT C.Titulo, R.Comentario, R.Calificacion FROM Resenas R JOIN Contenidos C ON R.ContenidoID = C.ContenidoID WHERE R.UsuarioID = ?"
+                        );
+                        verMisResenas.setInt(1, userId);
+                        rs = verMisResenas.executeQuery();
+                        while (rs.next()) {
+                            System.out.println("- '" + rs.getString("Titulo") + "': " +
+                                    rs.getString("Comentario") + " (Calificación: " + rs.getInt("Calificacion") + ")");
+                        }
+                        break;
+
+                    case 6:
+                        PreparedStatement historialStmt = conn.prepareStatement(
+                                "SELECT C.Titulo, H.FechaHora FROM HistorialPaginas H JOIN Contenidos C ON H.ContenidoID = C.ContenidoID WHERE H.UsuarioID = ?"
+                        );
+                        historialStmt.setInt(1, userId);
+                        rs = historialStmt.executeQuery();
+                        while (rs.next()) {
+                            System.out.println(rs.getString("Titulo") + " visto el " + rs.getTimestamp("FechaHora"));
                         }
                         break;
                 }
